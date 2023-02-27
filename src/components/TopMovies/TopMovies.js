@@ -22,7 +22,7 @@ function TopMovies() {
                 .then(res => {
                     console.log(res.data.results)
                     //store data in state
-                    setTopRatedMovies(res.data.results)
+                    setTopRatedMovies(res.data.results.slice(0, 10))
                 })
                 .catch(err => console.log(err))
 
