@@ -3,11 +3,18 @@ import {useParams} from 'react-router-dom'
 import "./MovieDetails.css"
 import axios from 'axios'
 import ReactPlayer from 'react-player'
+import Review from '../../components/Review/Review'
+import Rating from '../../components/Rating/Rating';
+import {UserContext} from '../../contexts/UserContext';
 
 function MovieDetails() {
     const apiKey = process.env.REACT_APP_API_KEY;
     const baseUrl = process.env.REACT_APP_BASE_URL;
     const imageBase = process.env.REACT_APP_IMAGE_BASE;
+
+    const serverUrl = process.env.REACT_APP_SERVER_URL;
+   
+    const {user, setUser, token, setToken} = React.useContext(UserContext);
 
     //I need to show info about a specific movie
     //WHAT movie?
@@ -18,12 +25,42 @@ function MovieDetails() {
     //create state for video link
     const [videoLink, setVideoLink] = React.useState('')
     const [movie, setMovie] = React.useState()
+    const [rating, setRating] = React.useState(0)
+
+    //create state for reviews
+    const [reviews, setReviews] = React.useState([])
+
+    //state for number of reviews showing
+    const [reviewNumber, setReviewNumber] = React.useState(3)
+    const [totalReviews, setTotalReviews] = React.useState(0)
+
+    //state for favorites
+    const [added, setAdded] = React.useState(false)
 
     //gives me movie details
     //${baseUrl}/movie/${movieId}?api_key=${apiKey}
-
-
     //${baseUrl}/movie/${movieId}/videos?api_key=${apiKey}
+
+    //to set added properly
+    React.useEffect(
+        ()=>{
+            //check if this movie has already been added
+            axios.post(`${serverUrl}/favoriteMovies/search`,{
+                user_id: user?._id,
+                tmdb_id: movieId
+            })
+            .then(res =>{
+                console.log("search result")
+                console.log(res)
+                if(res.data){
+                    setAdded(true)
+                }
+            })
+            .catch(err => console.log(err))
+
+        }, [user]
+    )
+
 
     React.useEffect(
         ()=>{
@@ -47,13 +84,56 @@ function MovieDetails() {
             //make api call to get movie info
             axios.get(`${baseUrl}/movie/${movieId}?api_key=${apiKey}`)
             .then(res =>{
-                console.log(res.data)
+                //console.log(res.data)
                 setMovie(res.data)
+                setRating(res.data.vote_average/2)
+            })
+            .catch(err => console.log(err))
+
+            //api call to get reviews
+            //${baseUrl}/movie/${movieId}/reviews?api_key=${apiKey}
+
+            axios.get(`${baseUrl}/movie/${movieId}/reviews?api_key=${apiKey}`)
+            .then(res =>{
+                //console.log(res.data.results)
+                setReviews(res.data.results)
+                setTotalReviews(res.data.total_results)
             })
             .catch(err => console.log(err))
 
         },[]
     )
+
+    const addToFavorites = () =>{
+        console.log("add")
+        //need movie id and user id
+        console.log("movie id is ", movieId)
+        console.log("user id is ", user._id)
+        //make api call to save favorite
+        axios.post(`${serverUrl}/favoriteMovies`,{
+            movie_id: movieId,
+            user_id: user._id
+        })
+        .then( res =>{
+            console.log(res)
+            //mark as "added"
+            setAdded(true)
+        })
+        .catch(err => console.log(err))
+
+    }
+
+    const removeFromFavorites = () =>{
+        console.log("remove")
+        //make delete request
+        axios.delete(`${serverUrl}/favoriteMovies/${user._id}/${movieId}`)
+        .then(res =>{
+            console.log(res)
+            //show as not added
+            setAdded(false)
+        })
+        .catch(err => console.log(err))
+    }
   return (
     <div className="details-container">
         {
@@ -79,7 +159,24 @@ function MovieDetails() {
         }
         <div className="title-container">
             <h2>{movie?.title}</h2>
+            {
+                token?
+                <div>
+                {
+                    added?
+                    <button className="btn-remove"
+                      onClick={removeFromFavorites}>Remove from favorites</button>
+                    :
+                    <button 
+                    onClick={addToFavorites}className="btn-add">Add to favorites</button>
+                
+                }
+                </div>
+                :
+                null
+            }
         </div>
+        <Rating stars={rating} />
         <div className="info-container">
             <img src={`${imageBase}/${movie?.poster_path}`}
                  className="details-poster" />
@@ -92,8 +189,17 @@ function MovieDetails() {
             </div>
         </div>
         <div className="review-container">
-            Reviews
+           {
+            reviews.slice(0, reviewNumber).map(item=><Review review={item} />)
+           }
         </div>
+        {
+            reviewNumber  <= totalReviews ?
+        <p onClick={()=>setReviewNumber(reviewNumber + 3)}>Read more reviews</p>
+        :
+        <p onClick={()=>setReviewNumber(3)}>End of reviews</p>
+
+        }
     </div>
   )
 }

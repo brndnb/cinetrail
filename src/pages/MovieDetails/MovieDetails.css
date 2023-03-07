@@ -1,4 +1,3 @@
-
 .details-container{
     margin-top:var(--header-height);
     min-height:100vh;
@@ -13,6 +12,7 @@
 
 
 .trailer-container{
+    margin-top: 20px;
     position:relative;
     padding-top:56.25%;
 }
@@ -27,14 +27,14 @@
 .trailer-player{
     position: absolute;
     top: 0;
-    left: 0;
+    left: 0; 
 }
 
 .info-container{
     display: flex;
     justify-content: space-between;
     padding: 15px;
-   
+    
 }
 
 .details-container h2{

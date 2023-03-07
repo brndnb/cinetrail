@@ -2,11 +2,11 @@ import React from 'react'
 import "./Rating.css"
 import StarRatings from 'react-star-ratings'
 
-function Rating() {
+function Rating({stars}) {
   return (
     <div>
         <StarRatings
-          rating={3.5}
+          rating={stars}
           starRatedColor="red"
           numberOfStars={5}
           starDimension="15px"
