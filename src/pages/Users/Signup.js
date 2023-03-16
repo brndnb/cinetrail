@@ -13,13 +13,13 @@ function Signup() {
     const [success, setSuccess] =React.useState(false)
 
     const handleSignup = (e) => {
-        e.preventDefault()
+        e.preventDefault();
 
         //make post request and send email pass and username to server
 
         axios.post(`${serverUrl}/users/signup`, {email, password, username})
         .then (res => {
-            console.log(res)
+           
             //status 409 = user exists
             if(res.data.status === 409) {
                 alert("email already exists")

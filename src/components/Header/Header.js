@@ -5,10 +5,19 @@ import {ThemeContext} from '../../contexts/ThemeContext';
 import {Link} from 'react-router-dom'
 import {useNavigate} from 'react-router-dom'
 import {UserContext} from '../../contexts/UserContext';
+import axios from 'axios'
+import SearchResult from '../../components/SearchResult/SearchResult'
 
 function Header() {
     //activate useNavigate
     const navigate = useNavigate();
+
+    const apiKey = process.env.REACT_APP_API_KEY;
+    const baseUrl = process.env.REACT_APP_BASE_URL;
+
+    //create state for search
+    const [query, setQuery] = React.useState('')
+    const [queryResults, setQueryResults] = React.useState([])
 
     //const darkMode = true;
     const [profileOptions, setProfileOptions] = React.useState(true);
@@ -36,11 +45,39 @@ function Header() {
 
   }
 
+  //${baseUrl}/search/movie?api_key=${apiKey&query=king
+
+  const handleSearch = (e) =>{
+    //console.log(e)
+    //store user input in state
+    setQuery(e.target.value)
+    //make api call to get matching movies
+    axios.get(`${baseUrl}/search/movie?api_key=${apiKey}&query=${e.target.value}`)
+    .then(res =>{
+        console.log(res.data.results)
+        //store the results
+        setQueryResults(res.data.results)
+    })
+    .catch(err => console.log(err))
+  }
+
   return (
     <div className={darkMode?"header-container":"header-container header-light"}>
         <a href="/" className="logo">CineTrail</a>
         <div className="search-container">
-            <input placeholder="Search movies" />
+            <input placeholder="Search movies" 
+              className="search-input"
+              onChange = {handleSearch} />
+              {
+                query?
+                <div className="search-results-container">
+                    {
+                        queryResults.map(item => <SearchResult movie={item} />)
+                    }
+                </div>
+                :
+                null
+              }
         </div>
         <div className="header-buttons-container">
             {
@@ -60,7 +97,7 @@ function Header() {
             {
                 token?
                 <div className="profile-container">
-                    <img src={user.image_url} 
+                    <img src={user.image_url} alt={user.username}
                     onClick={()=>setProfileOptions(!profileOptions)}
                     className="profile-img" />
                     <p>Welcome {user.username}</p>

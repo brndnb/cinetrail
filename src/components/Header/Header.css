@@ -9,6 +9,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0 20px;
+    z-index: 2;
 }
 
 .header-light{
@@ -20,6 +21,24 @@
     color: var(--red);
     font-size: 2rem;
     font-weight: bold;
+}
+
+.search-container{
+    position: relative;
+    width: 40%;
+    display: flex;
+}
+
+.search-results-container{
+    background-color:aliceblue;
+    position: absolute;
+    top: 30px;
+    left: 0;
+    height: 500px;
+    width: 100%;
+    color: black;
+
+    overflow: scroll;
 }
 
 .search-container input{
